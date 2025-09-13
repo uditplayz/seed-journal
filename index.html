@@ -1,13 +1,501 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Atomic Habits Journal</title>
+        <meta
+            name="description"
+            content="A production-ready atomic habits tracking PWA for building better habits"
+        />
+
+        <!-- PWA Meta Tags -->
+        <meta name="theme-color" content="#21838d" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Habits Journal" />
+
+        <!-- Icons -->
+        <link
+            rel="icon"
+            href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='80'>🎯</text></svg>"
+        />
+        <link
+            rel="apple-touch-icon"
+            href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%2321838d'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white'>🎯</text></svg>"
+        />
+
+        <!-- PWA Manifest -->
+        <link
+            rel="manifest"
+            href='data:application/json,{
+        "name": "Atomic Habits Journal",
+        "short_name": "Habits",
+        "description": "Track your daily habits and build better routines",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#fcfcf9",
+        "theme_color": "#21838d",
+        "icons": [
+            {
+                "src": "data:image/svg+xml,<svg xmlns=&apos;http://www.w3.org/2000/svg&apos; viewBox=&apos;0 0 192 192&apos;><rect width=&apos;192&apos; height=&apos;192&apos; fill=&apos;%2321838d&apos;/><text x=&apos;96&apos; y=&apos;130&apos; font-size=&apos;120&apos; text-anchor=&apos;middle&apos; fill=&apos;white&apos;>🎯</text></svg>",
+                "sizes": "192x192",
+                "type": "image/svg+xml"
+            },
+            {
+                "src": "data:image/svg+xml,<svg xmlns=&apos;http://www.w3.org/2000/svg&apos; viewBox=&apos;0 0 512 512&apos;><rect width=&apos;512&apos; height=&apos;512&apos; fill=&apos;%2321838d&apos;/><text x=&apos;256&apos; y=&apos;350&apos; font-size=&apos;320&apos; text-anchor=&apos;middle&apos; fill=&apos;white&apos;>🎯</text></svg>",
+                "sizes": "512x512",
+                "type": "image/svg+xml"
+            }
+        ]
+    }'
+        />
+
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <div id="app">
+            <!-- Loading Screen -->
+            <div id="loading-screen" class="loading-screen">
+                <div class="loading-spinner"></div>
+                <p>Loading your habits...</p>
+            </div>
+
+            <!-- Main App Container -->
+            <div id="main-app" class="app-container hidden">
+                <!-- Header -->
+                <header class="app-header">
+                    <div class="header-content">
+                        <h1 class="app-title">
+                            <span class="app-icon">🎯</span>
+                            <span id="page-title">Dashboard</span>
+                        </h1>
+                        <div class="header-actions">
+                            <button
+                                id="theme-toggle"
+                                class="btn btn--secondary btn--sm"
+                            >
+                                <span class="theme-icon">🌙</span>
+                            </button>
+                            <button
+                                id="settings-btn"
+                                class="btn btn--secondary btn--sm"
+                            >
+                                ⚙️
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Offline Indicator -->
+                    <div
+                        id="offline-indicator"
+                        class="offline-indicator hidden"
+                    >
+                        <span>📡 Offline - Changes will sync when online</span>
+                    </div>
+                </header>
+
+                <!-- Main Content -->
+                <main id="main-content" class="main-content">
+                    <!-- Dashboard View -->
+                    <div id="dashboard-view" class="view">
+                        <div class="dashboard-grid">
+                            <!-- Today's Quote -->
+                            <section class="quote-card card">
+                                <div class="card__body">
+                                    <div class="quote-content">
+                                        <p id="daily-quote" class="quote-text">
+                                            "Every action you take is a vote for
+                                            the type of person you wish to
+                                            become."
+                                        </p>
+                                        <cite
+                                            id="quote-author"
+                                            class="quote-author"
+                                            >— James Clear</cite
+                                        >
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Progress Overview -->
+                            <section class="progress-overview card">
+                                <div class="card__body">
+                                    <h3>Today's Progress</h3>
+                                    <div class="progress-stats">
+                                        <div class="stat-item">
+                                            <span
+                                                class="stat-number"
+                                                id="completed-today"
+                                                >0</span
+                                            >
+                                            <span class="stat-label"
+                                                >Completed</span
+                                            >
+                                        </div>
+                                        <div class="stat-item">
+                                            <span
+                                                class="stat-number"
+                                                id="total-habits"
+                                                >0</span
+                                            >
+                                            <span class="stat-label"
+                                                >Total</span
+                                            >
+                                        </div>
+                                        <div class="stat-item">
+                                            <span
+                                                class="stat-number"
+                                                id="completion-rate"
+                                                >0%</span
+                                            >
+                                            <span class="stat-label">Rate</span>
+                                        </div>
+                                    </div>
+                                    <div class="progress-bar-container">
+                                        <div
+                                            id="daily-progress-bar"
+                                            class="progress-bar"
+                                        >
+                                            <div
+                                                class="progress-fill"
+                                                style="width: 0%"
+                                            ></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Today's Habits -->
+                            <section class="habits-section">
+                                <div class="section-header">
+                                    <h3>Today's Habits</h3>
+                                    <button
+                                        id="add-habit-btn"
+                                        class="btn btn--primary btn--sm"
+                                    >
+                                        + Add Habit
+                                    </button>
+                                </div>
+                                <div id="habits-list" class="habits-list">
+                                    <!-- Habits will be dynamically inserted here -->
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <!-- Habits Management View -->
+                    <div id="habits-view" class="view hidden">
+                        <div class="view-header">
+                            <h2>Manage Habits</h2>
+                            <button
+                                id="add-habit-habits-btn"
+                                class="btn btn--primary"
+                            >
+                                + Add Habit
+                            </button>
+                        </div>
+                        <div id="all-habits-list" class="habits-list">
+                            <!-- All habits will be listed here -->
+                        </div>
+                    </div>
+
+                    <!-- Analytics View -->
+                    <div id="analytics-view" class="view hidden">
+                        <div class="view-header">
+                            <h2>Analytics</h2>
+                        </div>
+                        <div class="analytics-grid">
+                            <div class="card">
+                                <div class="card__body">
+                                    <h4>Weekly Progress</h4>
+                                    <div
+                                        id="weekly-chart"
+                                        class="chart-container"
+                                        style="
+                                            position: relative;
+                                            height: 300px;
+                                        "
+                                    >
+                                        <canvas
+                                            id="weekly-progress-chart"
+                                        ></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card__body">
+                                    <h4>Habit Completion</h4>
+                                    <div
+                                        id="completion-chart"
+                                        class="chart-container"
+                                        style="
+                                            position: relative;
+                                            height: 300px;
+                                        "
+                                    >
+                                        <canvas
+                                            id="habit-completion-chart"
+                                        ></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings View -->
+                    <div id="settings-view" class="view hidden">
+                        <div class="view-header">
+                            <h2>Settings</h2>
+                        </div>
+                        <div class="settings-content">
+                            <div class="card">
+                                <div class="card__body">
+                                    <h4>Appearance</h4>
+                                    <div class="setting-item">
+                                        <label
+                                            for="theme-select"
+                                            class="form-label"
+                                            >Theme</label
+                                        >
+                                        <select
+                                            id="theme-select"
+                                            class="form-control"
+                                        >
+                                            <option value="system">
+                                                System
+                                            </option>
+                                            <option value="light">Light</option>
+                                            <option value="dark">Dark</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card__body">
+                                    <h4>Data</h4>
+                                    <div class="settings-actions">
+                                        <button
+                                            id="export-data-btn"
+                                            class="btn btn--outline"
+                                        >
+                                            Export Data
+                                        </button>
+                                        <button
+                                            id="import-data-btn"
+                                            class="btn btn--outline"
+                                        >
+                                            Import Data
+                                        </button>
+                                        <input
+                                            type="file"
+                                            id="import-file-input"
+                                            accept=".json"
+                                            class="hidden"
+                                        />
+                                        <button
+                                            id="clear-data-btn"
+                                            class="btn btn--outline"
+                                            style="color: var(--color-error)"
+                                        >
+                                            Clear All Data
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card__body">
+                                    <h4>About</h4>
+                                    <p>Atomic Habits Journal v1.0.0</p>
+                                    <p>
+                                        Built with modern web technologies for
+                                        tracking and building better habits.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+
+                <!-- Bottom Navigation -->
+                <nav class="bottom-nav">
+                    <button class="nav-item active" data-view="dashboard">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-label">Dashboard</span>
+                    </button>
+                    <button class="nav-item" data-view="habits">
+                        <span class="nav-icon">📝</span>
+                        <span class="nav-label">Habits</span>
+                    </button>
+                    <button class="nav-item" data-view="analytics">
+                        <span class="nav-icon">📈</span>
+                        <span class="nav-label">Analytics</span>
+                    </button>
+                    <button class="nav-item" data-view="settings">
+                        <span class="nav-icon">⚙️</span>
+                        <span class="nav-label">Settings</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Modals (All initially hidden) -->
+            <!-- Add/Edit Habit Modal -->
+            <div id="habit-modal" class="modal hidden" style="display: none">
+                <div class="modal-backdrop"></div>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="habit-modal-title">Add New Habit</h3>
+                        <button class="modal-close">×</button>
+                    </div>
+                    <form id="habit-form" class="modal-body">
+                        <div class="form-group">
+                            <label for="habit-name" class="form-label"
+                                >Name</label
+                            >
+                            <input
+                                type="text"
+                                id="habit-name"
+                                class="form-control"
+                                required
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="habit-description" class="form-label"
+                                >Description</label
+                            >
+                            <textarea
+                                id="habit-description"
+                                class="form-control"
+                                rows="3"
+                            ></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="habit-category" class="form-label"
+                                >Category</label
+                            >
+                            <select id="habit-category" class="form-control">
+                                <!-- Categories will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="habit-target" class="form-label"
+                                >Target</label
+                            >
+                            <input
+                                type="number"
+                                id="habit-target"
+                                class="form-control"
+                                min="1"
+                                value="1"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="habit-unit" class="form-label"
+                                >Unit</label
+                            >
+                            <input
+                                type="text"
+                                id="habit-unit"
+                                class="form-control"
+                                placeholder="e.g., minutes, pages, sessions"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="habit-frequency" class="form-label"
+                                >Frequency</label
+                            >
+                            <select id="habit-frequency" class="form-control">
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                            </select>
+                        </div>
+                    </form>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn--secondary"
+                            id="habit-modal-cancel"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            form="habit-form"
+                            class="btn btn--primary"
+                            id="habit-modal-save"
+                        >
+                            Save Habit
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Templates Modal -->
+            <div
+                id="templates-modal"
+                class="modal hidden"
+                style="display: none"
+            >
+                <div class="modal-backdrop"></div>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Choose a Template</h3>
+                        <button class="modal-close">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="templates-grid" id="templates-list">
+                            <!-- Templates will be populated dynamically -->
+                        </div>
+                        <div class="modal-footer">
+                            <button
+                                id="create-custom-habit"
+                                class="btn btn--outline"
+                            >
+                                Create Custom Habit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confirmation Modal -->
+            <div
+                id="confirmation-modal"
+                class="modal hidden"
+                style="display: none"
+            >
+                <div class="modal-backdrop"></div>
+                <div class="modal-content modal-content--sm">
+                    <div class="modal-header">
+                        <h3 id="confirmation-title">Confirm Action</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p id="confirmation-message">
+                            Are you sure you want to perform this action?
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            class="btn btn--secondary"
+                            id="confirmation-cancel"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            class="btn btn--primary"
+                            id="confirmation-confirm"
+                        >
+                            Confirm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart.js for analytics -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="app.js"></script>
+    </body>
 </html>
