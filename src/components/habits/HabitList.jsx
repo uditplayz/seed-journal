@@ -3,6 +3,7 @@ import { useApp } from "../../context/AppContext";
 import { getHabitStatus, sortHabits } from "../../utils/habitUtils";
 import { Plus, Filter, Search } from "lucide-react";
 import HabitCard from "./HabitCard";
+import AddHabitModal from "./AddHabitModal";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function HabitList() {
@@ -10,6 +11,7 @@ export default function HabitList() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [selectedCategory, setSelectedCategory] = React.useState("all");
   const [sortBy, setSortBy] = React.useState("name");
+  const [showAddModal, setShowAddModal] = React.useState(false);
 
   const categories = React.useMemo(() => {
     const uniqueCategories = [...new Set(habits.map((h) => h.category))];
@@ -44,47 +46,48 @@ export default function HabitList() {
 
   if (loading) {
     return (
-      <div className="pt-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-10 bg-gray-200 dark:bg-gray-800 rounded-lg"></div>
-          <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded-lg w-1/2"></div>
-          <div className="space-y-3">
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="h-20 bg-gray-200 dark:bg-gray-800 rounded-lg"
-              ></div>
-            ))}
-          </div>
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
+          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
         </div>
+        {[1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            className="animate-pulse bg-gray-200 dark:bg-gray-700 h-32 rounded-xl"
+          />
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="pt-6 pb-6 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             My Habits
-          </h2>
+          </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             {habits.length} habit{habits.length !== 1 ? "s" : ""} total
           </p>
         </div>
 
-        <button className="btn btn-primary">
-          <Plus className="w-4 h-4 mr-2" />
-          Add Habit
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl transition-colors font-medium shadow-lg hover:shadow-xl"
+        >
+          <Plus className="w-5 h-5" />
+          <span className="hidden sm:inline">Add Habit</span>
         </button>
       </div>
 
       {/* Search and Filters */}
-      <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row gap-4">
         {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
             type="text"
             placeholder="Search habits..."
@@ -95,7 +98,7 @@ export default function HabitList() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex space-x-3">
           {/* Category Filter */}
           <select
             value={selectedCategory}
@@ -126,18 +129,15 @@ export default function HabitList() {
 
       {/* Habits List */}
       <div className="space-y-4">
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {filteredAndSortedHabits.length === 0 ? (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="card p-8 text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center py-12"
             >
-              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Filter className="w-8 h-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <div className="text-6xl mb-4">🌱</div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                 {searchTerm || selectedCategory !== "all"
                   ? "No matching habits"
                   : "No habits yet"}
@@ -147,84 +147,85 @@ export default function HabitList() {
                   ? "Try adjusting your search or filters"
                   : "Create your first habit to start building better routines"}
               </p>
+
               {!searchTerm && selectedCategory === "all" && (
-                <button className="btn btn-primary">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Your First Habit
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl transition-colors font-medium inline-flex items-center space-x-2"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span>Create Your First Habit</span>
                 </button>
               )}
             </motion.div>
           ) : (
-            <motion.div
-              className="space-y-3"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
+            <>
               {filteredAndSortedHabits.map((habit, index) => (
                 <motion.div
                   key={habit.id}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                    transition: { delay: index * 0.05 },
-                  }}
-                  exit={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
                 >
-                  <HabitCard habit={habit} showQuickComplete={true} />
+                  <HabitCard habit={habit} showQuickComplete />
                 </motion.div>
               ))}
-            </motion.div>
+            </>
           )}
         </AnimatePresence>
       </div>
 
       {/* Quick Stats */}
       {filteredAndSortedHabits.length > 0 && (
-        <div className="card p-4">
-          <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Quick Stats
           </h3>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-500 mb-1">
                 {
                   filteredAndSortedHabits.filter((h) => h.status.completed)
                     .length
                 }
-              </p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 Completed Today
-              </p>
+              </div>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-500 mb-1">
                 {Math.round(
                   filteredAndSortedHabits.reduce(
                     (sum, h) => sum + (h.status.streak || 0),
                     0,
                   ) / filteredAndSortedHabits.length,
                 ) || 0}
-              </p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 Avg. Streak
-              </p>
+              </div>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-500 mb-1">
                 {filteredAndSortedHabits.reduce(
                   (sum, h) => sum + (h.totalCompletions || 0),
                   0,
                 )}
-              </p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 Total Completions
-              </p>
+              </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Add Habit Modal */}
+      <AddHabitModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+      />
     </div>
   );
 }
