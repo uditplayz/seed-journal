@@ -254,7 +254,7 @@ export default function Settings() {
 
         <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-            Built with ❤️ for better habits. Inspired by Atomic Habits by James Clear.
+            Built with ❤️ by Udit Jain for better habits. Inspired by Atomic Habits by James Clear.
           </p>
 
           <a
